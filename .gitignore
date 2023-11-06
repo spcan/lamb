@@ -1,0 +1,3 @@
+# Ignore the JIT caches
+*__pycache__*
+*__pycache__/*
