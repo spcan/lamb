@@ -66,15 +66,14 @@ def webview():
                         },
                     ),
 
-                    # Menu setting to select heatmap or signal graph.
+                    # Menu setting to select type of graph.
                     dash.html.Div(
                         children=[
                             'Graph type',
-                            dash.dcc.RadioItems(
-                                ['Signal', 'FFT'],
+                            dash.dcc.Dropdown(
+                                ['Signal', 'FFT', 'Hilbert'],
                                 'Signal',
                                 id='select-graph',
-                                inline=True,
                             ),
                         ],
                         style={
@@ -398,6 +397,27 @@ def buildone(config: dict):
             yaxis_title="Voltage [V]"
         )
 
+    # Create the Hilbert envelope.
+    elif config['graph'] == 'Hilbert':
+        # Create the figure.
+        fig = go.Figure()
+
+        # Get the X axis for all the arrays.
+        x = pd.Series( np.array( range( 0, len( signal.sen.flatten() ) ) ) * signal.timestep )
+
+        # Add all the signals.
+        fig.add_scatter( x=x, y=pd.Series( signal.hil.flatten() ), name='Sensor envelope [Hilbert]' )
+        fig.add_vline( signal.endSource   * signal.timestep, line={'color': "#000000"} )
+        fig.add_vline( signal.startSignal * signal.timestep, line={'color': "#FF00FF"} )
+        fig.add_vline( signal.sigmax      * signal.timestep, line={'color': "#00FF00"} )
+
+        # Set the title
+        fig.update_layout(
+            title=dict(text=f"{config['siga']} envelope", font=dict(size=25), yref='paper'),
+            xaxis_title="T [us]",
+            yaxis_title="Voltage [V]"
+        )
+
     # Create the heatmap graph.
     else:
         # Create the heatmap.
@@ -460,7 +480,33 @@ def buildtwo(config: dict):
             fig.update_layout(
                 title=dict(text=f"Signals of {config['siga']} and {config['sigb']}", font=dict(size=25), yref='paper'),
                 xaxis_title="T [us]",
-                yaxis_title="Voltage [V]"
+                yaxis_title="Voltage [mV]"
+            )
+
+        # Create the Hilbert envelope.
+        elif config['graph'] == 'Hilbert':
+            # Create the figure.
+            fig = go.Figure()
+
+            # Get the X axis for all the arrays.
+            x = pd.Series( np.array( range( 0, len( signala.hil.flatten() ) ) ) * signala.timestep )
+
+            # Add all the signals.
+            fig.add_scatter( x=x, y=pd.Series( signala.hil.flatten()                         ), name='Sensor A delta [Hilbert]' )
+            fig.add_scatter( x=x, y=pd.Series(                         signalb.hil.flatten() ), name='Sensor B delta [Hilbert]' )
+            fig.add_scatter( x=x, y=pd.Series( signala.hil.flatten() - signalb.hil.flatten() ), name='Envelope delta [Hilbert]' )
+
+            # Add the timestamps.
+            fig.add_vline( signala.endSource   * signala.timestep, line={'color': "#000000"}, row=1, col=1 )
+            fig.add_vline( signala.startSignal * signala.timestep, line={'color': "#FF00FF"}, row=1, col=1 )
+            fig.add_vline( signalb.endSource   * signalb.timestep, line={'color': "#000000"}, row=2, col=1 )
+            fig.add_vline( signalb.startSignal * signalb.timestep, line={'color': "#00FF00"}, row=2, col=1 )
+
+            # Set the title
+            fig.update_layout(
+                title=dict(text=f"{config['siga']} envelope", font=dict(size=25), yref='paper'),
+                xaxis_title="T [us]",
+                yaxis_title="Voltage [mV]"
             )
 
         # Create the heatmap graph.
@@ -477,6 +523,7 @@ def buildtwo(config: dict):
                 xaxis_title="T [us]",
                 yaxis_title="Frequency [kHz]"
             )
+
     # Create the split graphs.
     else:
         # Create the signal graph.
@@ -524,7 +571,34 @@ def buildtwo(config: dict):
             fig.update_layout(
                 title=dict(text=f"Signals {config['siga']} and {config['sigb']}", font=dict(size=25), yref='paper'),
                 xaxis_title="T [us]",
-                yaxis_title="Voltage [V]"
+                yaxis_title="Voltage [mV]"
+            )
+
+        # Create the Hilbert envelope.
+        elif config['graph'] == 'Hilbert':
+            # Create the figure.
+            fig = splt.make_subplots(rows=2, cols=1, shared_xaxes=True)
+
+            # Get the X axis for all the arrays.
+            xa = pd.Series( np.array( range( 0, len( signala.hil.flatten() ) ) ) * signala.timestep )
+            xb = pd.Series( np.array( range( 0, len( signalb.hil.flatten() ) ) ) * signalb.timestep )
+
+            # Add all the signals.
+            # Add all the signals.
+            fig.add_scatter( x=xa, y=pd.Series( signala.hil.flatten() ), name='Sensor A envelope [Hilbert]', row=1, col=1 )
+            fig.add_scatter( x=xb, y=pd.Series( signalb.hil.flatten() ), name='Sensor B envelope [Hilbert]', row=2, col=1 )
+
+            # Add the timestamps.
+            fig.add_vline( signala.endSource   * signala.timestep, line={'color': "#000000"}, row=1, col=1 )
+            fig.add_vline( signala.startSignal * signala.timestep, line={'color': "#FF00FF"}, row=1, col=1 )
+            fig.add_vline( signalb.endSource   * signalb.timestep, line={'color': "#000000"}, row=2, col=1 )
+            fig.add_vline( signalb.startSignal * signalb.timestep, line={'color': "#00FF00"}, row=2, col=1 )
+
+            # Set the title
+            fig.update_layout(
+                title=dict(text=f"{config['siga']} and {config['sigb']} envelopes [Hilbert]", font=dict(size=25), yref='paper'),
+                xaxis_title="T [us]",
+                yaxis_title="Voltage [mV]"
             )
 
         # Create the heatmap graph.

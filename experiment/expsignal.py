@@ -4,12 +4,8 @@
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
 
 from .actuator import Actuator
-from dataclasses import dataclass
-from numpy import ndarray
 from scipy.signal import argrelextrema, hilbert, stft
 from .sensor import Sensor
 
@@ -102,10 +98,21 @@ class Signal:
         # Timestamp and analyze the signal spectrum.
         self.timestamp(cache)
         self.spectrum(cache)
+        self.hilbert(cache)
 
         # Set the cached flag if enabled.
         if cache:
             self.cached = True
+
+    def hilbert(self, cache=True):
+        """Analyzes the hilbert envelope of the signal"""
+
+        # Calculate the Hilbert signal.
+        analytic = hilbert( self.getsensor().flatten() )
+        envelope = np.abs( analytic )
+
+        if cache:
+            self.hil = envelope
 
     def spectrum(self, cache=True):
         """Analyzes the spectral energy distribution of the signal"""
