@@ -71,7 +71,7 @@ def webview():
                         children=[
                             'Graph type',
                             dash.dcc.Dropdown(
-                                ['Signal', 'FFT', 'Hilbert'],
+                                ['Signal', 'Spectrum', 'FFT', 'Hilbert'],
                                 'Signal',
                                 id='select-graph',
                             ),
@@ -397,6 +397,20 @@ def buildone(config: dict):
             yaxis_title="Voltage [V]"
         )
 
+    # Create the FFT spectrum.
+    elif config['graph'] == 'FFT':
+        # Create the figure.
+        fig = go.Figure()
+
+        # Add all the signals.
+        fig.add_scatter( x=pd.Series( signal.fftFullX.flatten() ), y=pd.Series( signal.fftFullY.flatten() ), name='Sensor spectrum [FFT]' )
+
+        # Set the title
+        fig.update_layout(
+            title=dict(text=f"{config['siga']} spectrum", font=dict(size=25), yref='paper'),
+            xaxis_title="F [Hz]",
+        )
+
     # Create the Hilbert envelope.
     elif config['graph'] == 'Hilbert':
         # Create the figure.
@@ -509,6 +523,21 @@ def buildtwo(config: dict):
                 yaxis_title="Voltage [mV]"
             )
 
+        # Create the FFT spectrum.
+        elif config['graph'] == 'FFT':
+            # Create the figure.
+            fig = go.Figure()
+
+            # Add all the signals.
+            fig.add_scatter( x=pd.Series( signala.fftFullX.flatten() ), y=pd.Series( signala.fftFullY.flatten() ), name='Sensor A spectrum [FFT]' )
+            fig.add_scatter( x=pd.Series( signalb.fftFullX.flatten() ), y=pd.Series( signalb.fftFullY.flatten() ), name='Sensor B spectrum [FFT]' )
+
+            # Set the title
+            fig.update_layout(
+                title=dict(text=f"{config['siga']} and {config['sigb']} spectrums", font=dict(size=25), yref='paper'),
+                xaxis_title="F [Hz]",
+            )
+
         # Create the heatmap graph.
         else:
             # Create the heatmap.
@@ -599,6 +628,21 @@ def buildtwo(config: dict):
                 title=dict(text=f"{config['siga']} and {config['sigb']} envelopes [Hilbert]", font=dict(size=25), yref='paper'),
                 xaxis_title="T [us]",
                 yaxis_title="Voltage [mV]"
+            )
+
+        # Create the Hilbert envelope.
+        elif config['graph'] == 'FFT':
+            # Create the figure.
+            fig = splt.make_subplots(rows=2, cols=1, shared_xaxes=True)
+
+            # Add all the signals.
+            fig.add_scatter( x=pd.Series( signala.fftFullX.flatten() ), y=pd.Series( signala.fftFullY.flatten() ), name='Sensor A spectrum [FFT]', row=1, col=1 )
+            fig.add_scatter( x=pd.Series( signalb.fftFullX.flatten() ), y=pd.Series( signalb.fftFullY.flatten() ), name='Sensor B spectrum [FFT]', row=2, col=1 )
+
+            # Set the title
+            fig.update_layout(
+                title=dict(text=f"{config['siga']} and {config['sigb']} spectrum [FFT]", font=dict(size=25), yref='paper'),
+                xaxis_title="F [Hz]",
             )
 
         # Create the heatmap graph.

@@ -2,13 +2,19 @@
 
 
 
+# Import Numpy and Pandas.
 import numpy as np
 import pandas as pd
 
+# Import internal data.
 from .actuator import Actuator
-from scipy.signal import argrelextrema, hilbert, stft
 from .sensor import Sensor
 
+# Import signal processing.
+from scipy.fft import fft, fftfreq
+from scipy.signal import argrelextrema, hilbert, stft, get_window as window
+
+# Import typing extensions.
 from typing_extensions import Any, Self, Tuple
 
 
@@ -117,22 +123,42 @@ class Signal:
     def spectrum(self, cache=True):
         """Analyzes the spectral energy distribution of the signal"""
 
-        # Calculate the FFT.
-        f, t, z = stft( self.getsensor().flatten(), nperseg=1500, fs=self.frequency )
+        # Calculate the STFT.
+        f, t, z = stft( self.getsensor().flatten(), window=window('hann', 4000 ), nperseg=4000, noverlap=3750, fs=self.frequency )
         #f, t, z = custom_stft( self.getsensor().flatten(), window=500, delta=100 )
 
         # Find all frequency indices below 1 MHz.
-        idx = np.where( f < 1e6 )
+        idx = np.where( f < 6e5 )
 
         fftF = f[idx].copy()
         fftT = t
         fftZ = np.abs( z[idx] ).copy()
+
+        # Get the amount of points in the signal.
+        N = len(self.sen) - self.endSource
+        S = self.endSource
+        if (N % 2) != 0:
+            N = N - 1
+            S = S + 1
+
+        # Calculate the full signal FFT.
+        print(f"FFT on size {N} ({N/2})")
+        fftFull  = fft( self.sen[S:] )
+        fftFullX = fftfreq(N, 1 / self.frequency)[0:int(N/2)]
+        fftFullY = (2.0 / N) * np.abs(fftFull[0:int(N/2)])
+
+        # Select only frequencies under 1 MHz.
+        fftFullY = fftFullY[ np.where(fftFullX < 1e6) ]
+        fftFullX = fftFullX[ np.where(fftFullX < 1e6) ]
 
         # Get the FFT of the filtered frequencies.
         if cache:
             self.fftF = fftF
             self.fftT = fftT
             self.fftZ = fftZ
+
+            self.fftFullX = fftFullX
+            self.fftFullY = fftFullY
 
         return fftF, fftT, fftZ
 
