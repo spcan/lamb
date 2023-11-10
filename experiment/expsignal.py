@@ -135,21 +135,21 @@ class Signal:
         fftZ = np.abs( z[idx] ).copy()
 
         # Get the amount of points in the signal.
-        N = len(self.sen) - self.endSource
-        S = self.endSource
-        if (N % 2) != 0:
-            N = N - 1
-            S = S + 1
+        N = len(self.sen)
+        #N = len(self.sen) - self.endSource
+        #S = self.endSource
+        #if (N % 2) != 0:
+        #    N = N - 1
+        #    S = S + 1
 
         # Calculate the full signal FFT.
-        print(f"FFT on size {N} ({N/2})")
-        fftFull  = fft( self.sen[S:] )
-        fftFullX = fftfreq(N, 1 / self.frequency)[0:int(N/2)]
-        fftFullY = (2.0 / N) * np.abs(fftFull[0:int(N/2)])
+        fftFull  = np.fft.fft( self.sen[:] )
+        fftFullX = np.linspace(0, 0.5 / self.timestep, N//2)  # fftfreq(N, N * self.timestep)[0:int(N/2)]
+        fftFullY = (2.0 / N) * np.abs( fftFull[0:N//2] )
 
         # Select only frequencies under 1 MHz.
-        fftFullY = fftFullY[ np.where(fftFullX < 1e6) ]
-        fftFullX = fftFullX[ np.where(fftFullX < 1e6) ]
+        #fftFullY = fftFullY[ np.where(fftFullX < 1e6) ]
+        #fftFullX = fftFullX[ np.where(fftFullX < 1e6) ]
 
         # Get the FFT of the filtered frequencies.
         if cache:
