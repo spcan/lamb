@@ -306,6 +306,7 @@ def expa(ignore):
 
 
 @dash.callback(
+    dash.Output('siga-select', 'value'),
     dash.Output('siga-select', 'options'),
     dash.Input('expa-select', 'value'),
 )
@@ -320,7 +321,7 @@ def siga(exp: str | None):
         raise dash.exceptions.PreventUpdate
 
     # Return the list of signal names in the given experiment.
-    return sorted( signals[exp].keys() )
+    return None, sorted( signals[exp].keys() )
 
 
 
@@ -343,6 +344,7 @@ def expb(ignore):
 
 
 @dash.callback(
+    dash.Output('sigb-select', 'value'),
     dash.Output('sigb-select', 'options'),
     dash.Input('expb-select', 'value'),
 )
@@ -357,7 +359,7 @@ def sigb(exp: str | None):
         raise dash.exceptions.PreventUpdate
 
     # Return the list of signal names in the given experiment.
-    return sorted( signals[exp].keys() )
+    return None, sorted( signals[exp].keys() )
 
 
 
